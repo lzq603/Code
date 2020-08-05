@@ -1,49 +1,30 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Net;
-using System.IO;
+﻿using RestSharp;
 
 namespace HisInterfaceValidate
 {
     class HttpClient
     {
+        public const string HTTPHOST = "http://localhost:8080";
         //POST方法
-        public static string HttpPost(string Url, string postDataStr)
+        public static IRestResponse HttpPost(string Url, string postDataStr)
         {
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(Url);
-            request.Method = "POST";
-            request.ContentType = "application/x-www-form-urlencoded";
-            Encoding encoding = Encoding.UTF8;
-            byte[] postData = encoding.GetBytes(postDataStr);
-            request.ContentLength = postData.Length;
-            Stream myRequestStream = request.GetRequestStream();
-            myRequestStream.Write(postData, 0, postData.Length);
-            myRequestStream.Close();
-            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-            Stream myResponseStream = response.GetResponseStream();
-            StreamReader myStreamReader = new StreamReader(myResponseStream, encoding);
-            string retString = myStreamReader.ReadToEnd();
-            myStreamReader.Close();
-            myResponseStream.Close();
 
-            return retString;
+            var client = new RestClient(Url);
+            client.Timeout = 2000;
+            var request = new RestRequest(Method.POST);
+            request.AddHeader("Content-Type", "application/json");
+            request.AddParameter("application/json", postDataStr, ParameterType.RequestBody);
+            IRestResponse response = client.Execute(request);
+            return response;
         }
         //GET方法
-        public static string HttpGet(string Url, string postDataStr)
+        public static IRestResponse HttpGet(string Url, string postDataStr)
         {
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(Url + (postDataStr == "" ? "" : "?") + postDataStr);
-            request.Method = "GET";
-            request.ContentType = "text/html;charset=UTF-8";
-            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-            Stream myResponseStream = response.GetResponseStream();
-            StreamReader myStreamReader = new StreamReader(myResponseStream, Encoding.GetEncoding("utf-8"));
-            string retString = myStreamReader.ReadToEnd();
-            myStreamReader.Close();
-            myResponseStream.Close();
-            return retString;
+            var client = new RestClient(Url);
+            client.Timeout = -2000;
+            var request = new RestRequest(Method.GET);
+            IRestResponse response = client.Execute(request);
+            return response;
         }
     }
 }
